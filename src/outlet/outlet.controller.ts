@@ -30,6 +30,11 @@ export class OutletController {
     return this.outletService.update(id, updateOutletDto);
   }
 
+  @Patch(':id/status')
+  updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.outletService.updateStatus(id, status);
+  }
+
   @Delete(':id')
   softDelete(@Param('id') id: string) {
     return this.outletService.softDelete(id);

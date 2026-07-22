@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { OrganizationService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -33,6 +34,16 @@ export class OrganizationController {
   ) {
     const shouldIncludeDeleted = includeDeleted === 'true';
     return this.organizationService.findOne(id, shouldIncludeDeleted);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateDto: any) {
+    return this.organizationService.update(id, updateDto);
+  }
+
+  @Patch(':id/status')
+  updateStatus(@Param('id') id: string, @Body('status') status: string) {
+    return this.organizationService.updateStatus(id, status);
   }
 
   @Delete(':id')

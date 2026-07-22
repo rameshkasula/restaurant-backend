@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { OutletStatus } from '../enums/outlet-status.enum';
 
 export type OutletDocument = HydratedDocument<Outlet>;
 
@@ -26,6 +27,13 @@ export class Outlet {
 
   @Prop({ required: true, default: false })
   isDeleted: boolean;
+
+  @Prop({
+    type: String,
+    enum: OutletStatus,
+    default: OutletStatus.ACTIVE,
+  })
+  status: OutletStatus;
 }
 
 export const OutletSchema = SchemaFactory.createForClass(Outlet);
