@@ -11,6 +11,7 @@ import {
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Controller('order')
 export class OrderController {
@@ -41,16 +42,18 @@ export class OrderController {
   // sales api
   @Get('/sales')
   findSales(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('outletId') outletId?: string,
     @Query('includeDeleted') includeDeleted?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.orderService.findAll(
+    return this.orderService.salesSummary(
       outletId,
       includeDeleted === 'true',
-      1,
-      10,
+      Number(page),
+      Number(limit),
       startDate,
       endDate,
     );
@@ -64,6 +67,14 @@ export class OrderController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.orderService.update(id, updateOrderDto);
+  }
+
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    return this.orderService.updateStatus(id, updateOrderStatusDto.status);
   }
 
   @Delete(':id')

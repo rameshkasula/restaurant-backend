@@ -14,6 +14,7 @@ import { CreateRestaurantRequestDto } from './dto/create-restaurant-request.dto'
 import { UpdateRestaurantRequestDto } from './dto/update-restaurant-request.dto';
 import { MailService } from '../mail/mail.service';
 import { RestaurantRequestStatus } from './enums/restaurant-request-status.enum';
+import { toPlainObject } from '../utils/mongoose.util';
 
 @Injectable()
 export class RestaurantRequestService {
@@ -75,7 +76,7 @@ export class RestaurantRequestService {
 
   // ─── Find One ──────────────────────────────────────────────────────────────
 
-  async findOne(id: string): Promise<RestaurantRequestDocument> {
+  async findOne(id: string): Promise<any> {
     const request = await this.restaurantRequestModel.findOne({
       _id: id,
       isDeleted: false,
@@ -85,7 +86,7 @@ export class RestaurantRequestService {
         `Restaurant request with ID "${id}" not found.`,
       );
     }
-    return request;
+    return toPlainObject(request);
   }
 
   // ─── Update ────────────────────────────────────────────────────────────────
@@ -93,7 +94,7 @@ export class RestaurantRequestService {
   async update(
     id: string,
     dto: UpdateRestaurantRequestDto,
-  ): Promise<RestaurantRequestDocument> {
+  ): Promise<any> {
     await this.findOne(id); // throws 404 if not found
 
     // Check email uniqueness if email is being updated
@@ -129,7 +130,7 @@ export class RestaurantRequestService {
       { $set: dto },
       { new: true },
     );
-    return updated!;
+    return toPlainObject(updated!);
   }
 
   // ─── Update Status ─────────────────────────────────────────────────────────
@@ -137,14 +138,14 @@ export class RestaurantRequestService {
   async updateStatus(
     id: string,
     status: RestaurantRequestStatus,
-  ): Promise<RestaurantRequestDocument> {
+  ): Promise<any> {
     await this.findOne(id); // throws 404 if not found
     const updated = await this.restaurantRequestModel.findByIdAndUpdate(
       id,
       { $set: { status } },
       { new: true },
     );
-    return updated!;
+    return toPlainObject(updated!);
   }
 
   // ─── Soft Delete ───────────────────────────────────────────────────────────

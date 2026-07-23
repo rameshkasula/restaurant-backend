@@ -8,6 +8,7 @@ import { Order, OrderDocument } from './schemas/order.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import dayjs from 'dayjs';
+import { OrderStatus } from './enums/order-status.enum';
 import { toPlainObject } from 'src/utils/mongoose.util';
 
 @Injectable()
@@ -16,9 +17,10 @@ export class OrderService {
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto): Promise<Order> {
+  async create(createOrderDto: CreateOrderDto): Promise<any> {
     const createdOrder = new this.orderModel(createOrderDto);
-    return createdOrder.save();
+    const saved = await createdOrder.save();
+    return toPlainObject(saved);
   }
 
   async findAll(
@@ -201,17 +203,78 @@ export class OrderService {
     };
   }
 
-  async findOne(id: string): Promise<Order> {
+  async salesSummary(
+    outletId?: string,
+    includeDeleted = false,
+    page = 1,
+    limit = 10,
+    startDate?: string,
+    endDate?: string,
+  ) {
+    const today = dayjs().startOf('day').toDate();
+    const tomorrow = dayjs().endOf('day').toDate();
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+
+    if (!includeDeleted) {
+      filter.isDeleted = false;
+    }
+
+    if (outletId) {
+      filter.outletId = new Types.ObjectId(outletId);
+    }
+
+    const start = startDate
+      ? dayjs(startDate).startOf('day').toDate()
+      : dayjs().subtract(7, 'day').startOf('day').toDate();
+
+    const end = endDate
+      ? dayjs(endDate).endOf('day').toDate()
+      : dayjs().endOf('day').toDate();
+
+    filter.createdAt = {
+      $gte: start,
+      $lte: end,
+    };
+
+    const [ordersList, total] = await Promise.all([
+      this.orderModel
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec(),
+
+      this.orderModel.countDocuments(filter).exec(),
+    ]);
+    return {
+      range: {
+        startDate: start,
+        endDate: end,
+      },
+      data: toPlainObject(ordersList),
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async findOne(id: string): Promise<any> {
     const order = await this.orderModel
       .findOne({ _id: id, isDeleted: false })
       .exec();
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
-    return order;
+    return toPlainObject(order);
   }
 
-  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
+  async update(id: string, updateOrderDto: UpdateOrderDto): Promise<any> {
     const updatedOrder = await this.orderModel
       .findOneAndUpdate({ _id: id, isDeleted: false }, updateOrderDto, {
         new: true,
@@ -220,7 +283,21 @@ export class OrderService {
     if (!updatedOrder) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
-    return updatedOrder;
+    return toPlainObject(updatedOrder);
+  }
+
+  async updateStatus(id: string, status: OrderStatus): Promise<any> {
+    const updatedOrder = await this.orderModel
+      .findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        { status },
+        { new: true },
+      )
+      .exec();
+    if (!updatedOrder) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+    return toPlainObject(updatedOrder);
   }
 
   async softDelete(id: string): Promise<{ message: string }> {
@@ -233,7 +310,7 @@ export class OrderService {
     return { message: `Order with ID ${id} has been soft deleted` };
   }
 
-  async restore(id: string): Promise<Order> {
+  async restore(id: string): Promise<any> {
     const order = await this.orderModel
       .findOneAndUpdate(
         { _id: id, isDeleted: true },
@@ -244,6 +321,6 @@ export class OrderService {
     if (!order) {
       throw new NotFoundException(`Deleted Order with ID ${id} not found`);
     }
-    return order;
+    return toPlainObject(order);
   }
 }

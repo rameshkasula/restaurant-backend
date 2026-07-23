@@ -22,6 +22,11 @@ describe('OrganizationService', () => {
   let service: OrganizationService;
   let model: any;
 
+  const mockQuery = (resolvedValue: any) => ({
+    lean: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue(resolvedValue),
+  });
+
   const mockModel = {
     new: jest.fn(),
     constructor: jest.fn(),
@@ -84,9 +89,7 @@ describe('OrganizationService', () => {
         new Date(),
         false,
       );
-      model.find.mockReturnValue({
-        exec: jest.fn().mockResolvedValue([activeOrg]),
-      });
+      model.find.mockReturnValue(mockQuery([activeOrg]));
 
       const result = await service.findAll();
       expect(model.find).toHaveBeenCalledWith({ isDeleted: false });
@@ -108,9 +111,7 @@ describe('OrganizationService', () => {
         true,
       );
 
-      model.find.mockReturnValue({
-        exec: jest.fn().mockResolvedValue([activeOrg, deletedOrg]),
-      });
+      model.find.mockReturnValue(mockQuery([activeOrg, deletedOrg]));
 
       const result = await service.findAll(true);
       expect(model.find).toHaveBeenCalledWith({});
@@ -123,9 +124,7 @@ describe('OrganizationService', () => {
 
     it('should find an active organization', async () => {
       const org = mockOrganization(validId, 'Org', new Date(), false);
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(org),
-      });
+      model.findOne.mockReturnValue(mockQuery(org));
 
       const result = await service.findOne(validId);
       expect(model.findOne).toHaveBeenCalledWith({
@@ -142,9 +141,7 @@ describe('OrganizationService', () => {
     });
 
     it('should throw NotFoundException if organization not found', async () => {
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(null),
-      });
+      model.findOne.mockReturnValue(mockQuery(null));
 
       await expect(service.findOne(validId)).rejects.toThrow(NotFoundException);
     });
@@ -155,12 +152,8 @@ describe('OrganizationService', () => {
 
     it('should soft delete the organization', async () => {
       const org = mockOrganization(validId, 'Org', new Date(), false);
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(org),
-      });
-      model.findByIdAndUpdate.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(org),
-      });
+      model.findOne.mockReturnValue(mockQuery(org));
+      model.findByIdAndUpdate.mockReturnValue(mockQuery(org));
 
       const result = await service.softDelete(validId);
       expect(result.message).toContain('soft deleted');
@@ -183,12 +176,8 @@ describe('OrganizationService', () => {
       );
       const restoredOrg = mockOrganization(validId, 'Org', new Date(), false);
 
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(deletedOrg),
-      });
-      model.findByIdAndUpdate.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(restoredOrg),
-      });
+      model.findOne.mockReturnValue(mockQuery(deletedOrg));
+      model.findByIdAndUpdate.mockReturnValue(mockQuery(restoredOrg));
 
       const result = await service.restore(validId);
       expect(result.isDeleted).toBe(false);
@@ -201,9 +190,7 @@ describe('OrganizationService', () => {
 
     it('should return immediately if organization is already active', async () => {
       const activeOrg = mockOrganization(validId, 'Org', new Date(), false);
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(activeOrg),
-      });
+      model.findOne.mockReturnValue(mockQuery(activeOrg));
 
       const result = await service.restore(validId);
       expect(result.isDeleted).toBe(false);

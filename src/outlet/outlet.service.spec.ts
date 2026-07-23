@@ -41,6 +41,11 @@ describe('OutletService', () => {
   let model: any;
   let organizationService: any;
 
+  const mockQuery = (resolvedValue: any) => ({
+    lean: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue(resolvedValue),
+  });
+
   const mockModel = {
     new: jest.fn(),
     constructor: jest.fn(),
@@ -140,9 +145,7 @@ describe('OutletService', () => {
   describe('findAll', () => {
     it('should return active outlets by default', async () => {
       const activeOutlet = mockOutlet('60d5ecb862d512a8a816174a', 'Outlet 1', 'Addr 1');
-      model.find.mockReturnValue({
-        exec: jest.fn().mockResolvedValue([activeOutlet]),
-      });
+      model.find.mockReturnValue(mockQuery([activeOutlet]));
 
       const result = await service.findAll();
       expect(model.find).toHaveBeenCalledWith({ isDeleted: false });
@@ -156,9 +159,7 @@ describe('OutletService', () => {
 
     it('should find an active outlet', async () => {
       const outlet = mockOutlet(validId, 'Outlet', 'Addr');
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(outlet),
-      });
+      model.findOne.mockReturnValue(mockQuery(outlet));
 
       const result = await service.findOne(validId);
       expect(model.findOne).toHaveBeenCalledWith({ _id: validId, isDeleted: false });
@@ -177,12 +178,8 @@ describe('OutletService', () => {
       const outlet = mockOutlet(validId, 'Outlet', 'Addr');
       const updatedOutlet = mockOutlet(validId, 'Outlet New', 'Addr New');
       
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(outlet),
-      });
-      model.findByIdAndUpdate.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(updatedOutlet),
-      });
+      model.findOne.mockReturnValue(mockQuery(outlet));
+      model.findByIdAndUpdate.mockReturnValue(mockQuery(updatedOutlet));
 
       const result = await service.update(validId, { name: 'Outlet New', address: 'Addr New' });
       expect(result.name).toBe('Outlet New');
@@ -194,12 +191,8 @@ describe('OutletService', () => {
 
     it('should soft delete the outlet', async () => {
       const outlet = mockOutlet(validId, 'Outlet', 'Addr');
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(outlet),
-      });
-      model.findByIdAndUpdate.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(outlet),
-      });
+      model.findOne.mockReturnValue(mockQuery(outlet));
+      model.findByIdAndUpdate.mockReturnValue(mockQuery(outlet));
 
       const result = await service.softDelete(validId);
       expect(result.message).toContain('soft deleted');
@@ -213,12 +206,8 @@ describe('OutletService', () => {
       const deletedOutlet = mockOutlet(validId, 'Outlet', 'Addr', null, false, null, null, true);
       const restoredOutlet = mockOutlet(validId, 'Outlet', 'Addr', null, false, null, null, false);
 
-      model.findOne.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(deletedOutlet),
-      });
-      model.findByIdAndUpdate.mockReturnValue({
-        exec: jest.fn().mockResolvedValue(restoredOutlet),
-      });
+      model.findOne.mockReturnValue(mockQuery(deletedOutlet));
+      model.findByIdAndUpdate.mockReturnValue(mockQuery(restoredOutlet));
 
       const result = await service.restore(validId);
       expect(result.isDeleted).toBe(false);
