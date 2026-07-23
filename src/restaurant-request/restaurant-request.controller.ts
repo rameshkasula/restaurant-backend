@@ -15,6 +15,7 @@ import { RestaurantRequestService } from './restaurant-request.service';
 import { CreateRestaurantRequestDto } from './dto/create-restaurant-request.dto';
 import { UpdateRestaurantRequestDto } from './dto/update-restaurant-request.dto';
 import { RestaurantRequestResponseDto } from './dto/restaurant-request-response.dto';
+import { UpdateRestaurantRequestStatusDto } from './dto/update-restaurant-request-status.dto';
 import { plainToInstance } from 'class-transformer';
 
 @ApiTags('Restaurant Requests')
@@ -66,6 +67,21 @@ export class RestaurantRequestController {
   @ApiResponse({ status: 409, description: 'Email or phone already exists.' })
   async update(@Param('id') id: string, @Body() dto: UpdateRestaurantRequestDto) {
     const result = await this.service.update(id, dto);
+    return plainToInstance(RestaurantRequestResponseDto, result, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  // PATCH /api/v1/restaurant-requests/:id/status
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Update the status of a restaurant request by ID' })
+  @ApiResponse({ status: 200, description: 'Request status updated successfully.', type: RestaurantRequestResponseDto })
+  @ApiResponse({ status: 404, description: 'Request not found.' })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: UpdateRestaurantRequestStatusDto,
+  ) {
+    const result = await this.service.updateStatus(id, dto.status);
     return plainToInstance(RestaurantRequestResponseDto, result, {
       excludeExtraneousValues: true,
     });

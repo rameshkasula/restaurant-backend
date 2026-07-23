@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { UserRole } from '../enums/user-role.enum';
+import { UserStatus } from '../enums/user-status.enum';
 
 export type UserDocument = User & Document;
 
@@ -20,6 +21,9 @@ export class User {
 
   @Prop({ required: true })
   passwordHash: string;
+
+  @Prop({ required: true, type: String, enum: UserStatus, default: UserStatus.ACTIVE })
+  status: UserStatus;
 
   @Prop({ required: true, default: false })
   isDeleted: boolean;

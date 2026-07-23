@@ -13,6 +13,7 @@ import {
 import { CreateRestaurantRequestDto } from './dto/create-restaurant-request.dto';
 import { UpdateRestaurantRequestDto } from './dto/update-restaurant-request.dto';
 import { MailService } from '../mail/mail.service';
+import { RestaurantRequestStatus } from './enums/restaurant-request-status.enum';
 
 @Injectable()
 export class RestaurantRequestService {
@@ -126,6 +127,21 @@ export class RestaurantRequestService {
     const updated = await this.restaurantRequestModel.findByIdAndUpdate(
       id,
       { $set: dto },
+      { new: true },
+    );
+    return updated!;
+  }
+
+  // ─── Update Status ─────────────────────────────────────────────────────────
+
+  async updateStatus(
+    id: string,
+    status: RestaurantRequestStatus,
+  ): Promise<RestaurantRequestDocument> {
+    await this.findOne(id); // throws 404 if not found
+    const updated = await this.restaurantRequestModel.findByIdAndUpdate(
+      id,
+      { $set: { status } },
       { new: true },
     );
     return updated!;

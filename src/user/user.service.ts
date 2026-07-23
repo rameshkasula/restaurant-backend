@@ -6,6 +6,7 @@ import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { toPlainObject } from '../utils/mongoose.util';
+import { UserStatus } from './enums/user-status.enum';
 
 @Injectable()
 export class UserService {
@@ -18,6 +19,7 @@ export class UserService {
       role: createUserDto.role,
       email: createUserDto.email,
       passwordHash: createUserDto.passwordHash,
+      status: createUserDto.status ?? UserStatus.ACTIVE,
     });
     const saved = await created.save();
     return toPlainObject(saved);
@@ -54,7 +56,26 @@ export class UserService {
           ...(updateUserDto.role !== undefined && { role: updateUserDto.role }),
           ...(updateUserDto.email !== undefined && { email: updateUserDto.email }),
           ...(updateUserDto.passwordHash !== undefined && { passwordHash: updateUserDto.passwordHash }),
+          ...(updateUserDto.status !== undefined && { status: updateUserDto.status }),
         },
+        { new: true },
+      )
+      .lean()
+      .exec();
+    if (!updated) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return toPlainObject(updated);
+  }
+
+  async updateStatus(id: string, status: UserStatus): Promise<any> {
+    if (!isValidObjectId(id)) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    const updated = await this.userModel
+      .findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        { status },
         { new: true },
       )
       .lean()

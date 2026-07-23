@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { UserRole } from '../enums/user-role.enum';
+import { UserStatus } from '../enums/user-status.enum';
 
 export class CreateUserDto {
   @IsString()
@@ -22,5 +23,9 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   readonly passwordHash: string;
+
+  @IsEnum(UserStatus)
+  @IsOptional()
+  readonly status?: UserStatus;
 }
 
