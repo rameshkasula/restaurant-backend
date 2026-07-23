@@ -11,6 +11,7 @@ import {
 import { MenuItemService } from './menu-item.service';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
 import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
+import { UpdateMenuItemStatusDto } from './dto/update-menu-item-status.dto';
 
 @Controller('menu-item')
 export class MenuItemController {
@@ -40,6 +41,14 @@ export class MenuItemController {
     @Body() updateMenuItemDto: UpdateMenuItemDto,
   ) {
     return this.menuItemService.update(id, updateMenuItemDto);
+  }
+
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateMenuItemStatusDto: UpdateMenuItemStatusDto,
+  ) {
+    return this.menuItemService.updateStatus(id, updateMenuItemStatusDto.status);
   }
 
   @Delete(':id')

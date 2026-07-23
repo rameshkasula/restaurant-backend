@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { MenuItemCategory } from '../enums/menu-item-category.enum';
+import { MenuItemStatus } from '../enums/menu-item-status.enum';
 
 export type MenuItemDocument = MenuItem & Document;
 
@@ -23,6 +24,14 @@ export class MenuItem {
 
   @Prop({ required: true, default: 10 })
   stock: number;
+
+  @Prop({
+    required: true,
+    type: String,
+    enum: MenuItemStatus,
+    default: MenuItemStatus.ACTIVE,
+  })
+  status: MenuItemStatus;
 
   @Prop({ required: true, default: false })
   isDeleted: boolean;

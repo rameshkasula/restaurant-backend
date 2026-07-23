@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { MenuItem, MenuItemDocument } from './schemas/menu-item.schema';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
 import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
+import { MenuItemStatus } from './enums/menu-item-status.enum';
+import { toPlainObject } from '../utils/mongoose.util';
 
 @Injectable()
 export class MenuItemService {
@@ -11,15 +13,16 @@ export class MenuItemService {
     @InjectModel(MenuItem.name) private menuItemModel: Model<MenuItemDocument>,
   ) {}
 
-  async create(createMenuItemDto: CreateMenuItemDto): Promise<MenuItem> {
+  async create(createMenuItemDto: CreateMenuItemDto): Promise<any> {
     const createdMenuItem = new this.menuItemModel(createMenuItemDto);
-    return createdMenuItem.save();
+    const saved = await createdMenuItem.save();
+    return toPlainObject(saved);
   }
 
   async findAll(
     outletId?: string,
     includeDeleted = false,
-  ): Promise<MenuItem[]> {
+  ): Promise<any[]> {
     const filter: any = {};
     if (!includeDeleted) {
       filter.isDeleted = false;
@@ -27,23 +30,24 @@ export class MenuItemService {
     if (outletId) {
       filter.outletId = outletId;
     }
-    return this.menuItemModel.find(filter).exec();
+    const items = await this.menuItemModel.find(filter).exec();
+    return toPlainObject(items);
   }
 
-  async findOne(id: string): Promise<MenuItem> {
+  async findOne(id: string): Promise<any> {
     const menuItem = await this.menuItemModel
       .findOne({ _id: id, isDeleted: false })
       .exec();
     if (!menuItem) {
       throw new NotFoundException(`MenuItem with ID ${id} not found`);
     }
-    return menuItem;
+    return toPlainObject(menuItem);
   }
 
   async update(
     id: string,
     updateMenuItemDto: UpdateMenuItemDto,
-  ): Promise<MenuItem> {
+  ): Promise<any> {
     const updatedMenuItem = await this.menuItemModel
       .findOneAndUpdate({ _id: id, isDeleted: false }, updateMenuItemDto, {
         new: true,
@@ -52,7 +56,21 @@ export class MenuItemService {
     if (!updatedMenuItem) {
       throw new NotFoundException(`MenuItem with ID ${id} not found`);
     }
-    return updatedMenuItem;
+    return toPlainObject(updatedMenuItem);
+  }
+
+  async updateStatus(id: string, status: MenuItemStatus): Promise<any> {
+    const updatedMenuItem = await this.menuItemModel
+      .findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        { status },
+        { new: true },
+      )
+      .exec();
+    if (!updatedMenuItem) {
+      throw new NotFoundException(`MenuItem with ID ${id} not found`);
+    }
+    return toPlainObject(updatedMenuItem);
   }
 
   async softDelete(id: string): Promise<{ message: string }> {
@@ -65,7 +83,7 @@ export class MenuItemService {
     return { message: `MenuItem with ID ${id} has been soft deleted` };
   }
 
-  async restore(id: string): Promise<MenuItem> {
+  async restore(id: string): Promise<any> {
     const menuItem = await this.menuItemModel
       .findOneAndUpdate(
         { _id: id, isDeleted: true },
@@ -76,6 +94,6 @@ export class MenuItemService {
     if (!menuItem) {
       throw new NotFoundException(`Deleted MenuItem with ID ${id} not found`);
     }
-    return menuItem;
+    return toPlainObject(menuItem);
   }
 }

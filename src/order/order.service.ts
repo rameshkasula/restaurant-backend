@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -16,10 +18,7 @@ export class OrderService {
     return createdOrder.save();
   }
 
-  async findAll(
-    outletId?: string,
-    includeDeleted = false,
-  ): Promise<Order[]> {
+  async findAll(outletId?: string, includeDeleted = false): Promise<Order[]> {
     const filter: any = {};
     if (!includeDeleted) {
       filter.isDeleted = false;

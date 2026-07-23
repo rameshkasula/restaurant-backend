@@ -29,6 +29,15 @@ export class OrderController {
     return this.orderService.findAll(outletId, includeDeleted === 'true');
   }
 
+  // sales api
+  @Get('/sales')
+  findSales(
+    @Query('outletId') outletId?: string,
+    @Query('includeDeleted') includeDeleted?: string,
+  ) {
+    return this.orderService.findAll(outletId, includeDeleted === 'true');
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(id);
