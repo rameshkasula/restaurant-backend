@@ -25,8 +25,17 @@ export class OrderController {
   findAll(
     @Query('outletId') outletId?: string,
     @Query('includeDeleted') includeDeleted?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
-    return this.orderService.findAll(outletId, includeDeleted === 'true');
+    return this.orderService.findAll(
+      outletId,
+      includeDeleted === 'true',
+      1,
+      10,
+      startDate,
+      endDate,
+    );
   }
 
   // sales api
@@ -34,8 +43,17 @@ export class OrderController {
   findSales(
     @Query('outletId') outletId?: string,
     @Query('includeDeleted') includeDeleted?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
-    return this.orderService.findAll(outletId, includeDeleted === 'true');
+    return this.orderService.findAll(
+      outletId,
+      includeDeleted === 'true',
+      1,
+      10,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':id')
