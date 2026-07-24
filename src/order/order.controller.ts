@@ -52,8 +52,8 @@ export class OrderController {
     return this.orderService.salesSummary(
       outletId,
       includeDeleted === 'true',
-      Number(page),
-      Number(limit),
+      page ? Number(page) : undefined,
+      limit ? Number(limit) : undefined,
       startDate,
       endDate,
     );

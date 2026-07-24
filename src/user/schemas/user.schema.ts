@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { UserRole } from '../enums/user-role.enum';
@@ -22,11 +23,28 @@ export class User {
   @Prop({ required: true })
   passwordHash: string;
 
-  @Prop({ required: true, type: String, enum: UserStatus, default: UserStatus.ACTIVE })
+  @Prop({
+    required: true,
+    type: String,
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
+  })
   status: UserStatus;
 
   @Prop({ required: true, default: false })
   isDeleted: boolean;
+
+  @Prop({ default: false })
+  isVerified: boolean;
+
+  @Prop({ type: String, default: null })
+  otp: string | null;
+
+  @Prop({ type: Date, default: null })
+  otpExpiry: Date | null;
+
+  @Prop({ type: [String], default: [] })
+  tokens: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

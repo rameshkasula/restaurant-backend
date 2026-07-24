@@ -211,11 +211,9 @@ export class OrderService {
     startDate?: string,
     endDate?: string,
   ) {
-    const today = dayjs().startOf('day').toDate();
-    const tomorrow = dayjs().endOf('day').toDate();
     const skip = (page - 1) * limit;
 
-    const filter = {};
+    const filter: any = {};
 
     if (!includeDeleted) {
       filter.isDeleted = false;

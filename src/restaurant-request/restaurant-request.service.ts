@@ -28,7 +28,7 @@ export class RestaurantRequestService {
 
   async create(
     dto: CreateRestaurantRequestDto,
-  ): Promise<RestaurantRequestDocument> {
+  ): Promise<any> {
     // Check email uniqueness
     const emailExists = await this.restaurantRequestModel.findOne({
       email: dto.email.toLowerCase().trim(),
@@ -51,7 +51,7 @@ export class RestaurantRequestService {
 
     const request = await this.restaurantRequestModel.create(dto);
 
-    const _updatedRequest = request.toJSON();
+    const _updatedRequest = toPlainObject(request);
 
     // Send confirmation email asynchronously (non-blocking)
     this.mailService
